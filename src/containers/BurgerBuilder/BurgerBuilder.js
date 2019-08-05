@@ -9,6 +9,7 @@ import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
 import axios from '../../axios/axios-order';
 import Spinner from '../../components/UI/Spinner/Spinner';
 import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler';
+import * as actionTypes from '../../store/actions';
 
 const INGREDIENTS_PRICE = {
     meat: 0.8,
@@ -100,13 +101,7 @@ class BurgerBuilder extends Component {
     }
 
     componentDidMount() {
-        axios.get('https://react-my-burger-27f38.firebaseio.com/ingredients.json')
-            .then(res => {
-                this.setState({ ingredients: res.data });
-            })
-            .catch(err => {
-                this.setState({ error: true });
-            });
+        this.props.onLoadIngredient();
     }
 
     render() {
@@ -121,6 +116,7 @@ class BurgerBuilder extends Component {
         let orderSummary = null;
 
         if (this.props.ingredients) {
+            //console.log(this.props.ingredients);
             burger = (
                 <Aux>
                     <Burger ingredients={this.props.ingredients} />
@@ -155,10 +151,15 @@ class BurgerBuilder extends Component {
 
 const mapStateToProps = state => {
     return {
-        ingredients: state.ingredients
+        ingredients: {cheese: 0, bacon: 1, salad: 1, meat: 1}
     }
 }
 
-//const map
+const mapDispatchToProps = dispatchEvent => {
+    return {
+        onLoadIngredient: () => dispatchEvent({type: actionTypes.LOAD_INGREDIENT}),
+        onAddingIngredient: (ingType) => dispatchEvent({type: actionTypes.ADD_INGREDIENT, ingType: ingType}),
+    }
+}
 
-export default connect(mapStateToProps)(withErrorHandler(BurgerBuilder, axios)) ; 
+export default connect(mapStateToProps, mapDispatchToProps)(withErrorHandler(BurgerBuilder, axios)) ; 
