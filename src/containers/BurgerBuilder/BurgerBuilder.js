@@ -22,48 +22,11 @@ class BurgerBuilder extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            ingredients: null,
-            price: 4,
-            purchasable: false,
             purchasing: false,
             loading: false,
             error: false
         };
         this.purchasingHandler = this.purchasingHandler.bind(this);
-    }
-
-    purchasableHandler(ingredients) {
-        const sum = Object.keys(ingredients).map((ingKey) => {
-            return ingredients[ingKey]
-        }).reduce((acc, crr) => acc + crr, 0);
-        this.setState({ purchasable: sum > 0 });
-    };
-    addingIngredientHandler = (type) => {
-        let ing = { ...this.props.ingredients };
-        ing[type]++;
-        let oldPrice = this.state.price;
-        let updatedPrice = INGREDIENTS_PRICE[type] + oldPrice;
-        // console.log(updatedPrice);
-        this.setState({
-            ingredients: ing,
-            price: updatedPrice
-        });
-        this.purchasableHandler(ing);
-    }
-
-    removeIngredientHandler = (type) => {
-        let ing = { ...this.props.ingredients };
-        let oldPrice = this.state.price;
-        if (ing[type] <= 0) {
-            return;
-        }
-        ing[type]--;
-        let updatedPrice = oldPrice - INGREDIENTS_PRICE[type];
-        this.setState({
-            ingredients: ing,
-            price: updatedPrice
-        });
-        this.purchasableHandler(ing);
     }
 
     purchasingHandler() {
@@ -81,7 +44,7 @@ class BurgerBuilder extends Component {
         const queryParams = Object.keys(ingredients).map(ingKey => {
             return encodeURIComponent(ingKey) + '=' + encodeURIComponent(ingredients[ingKey]) 
         });
-        queryParams.push('price=' + encodeURIComponent(this.state.price.toFixed(2)));
+        queryParams.push('price=' + encodeURIComponent(this.props.price.toFixed(2)));
         const queryString = queryParams.join('&');
         this.props.history.push({
             pathname: '/checkout',
@@ -116,16 +79,15 @@ class BurgerBuilder extends Component {
         let orderSummary = null;
 
         if (this.props.ingredients) {
-            //console.log(this.props.ingredients);
             burger = (
                 <Aux>
                     <Burger ingredients={this.props.ingredients} />
                     <BuildControls
-                        ingredientAdded={this.addingIngredientHandler}
-                        ingredientRemoved={this.removeIngredientHandler}
+                        ingredientAdded={this.props.onAddingIngredient}
+                        ingredientRemoved={this.props.onRemovingIngredient}
                         disabledInfo={disabledInfo}
-                        price={this.state.price}
-                        purchasable={this.state.purchasable}
+                        price={this.props.price}
+                        purchasable={this.props.purchasable}
                         orderClicked={this.purchasingHandler} />
                 </Aux>
             );
@@ -133,7 +95,7 @@ class BurgerBuilder extends Component {
                 ingredients={this.props.ingredients}
                 cancel={this.puchaseCancelHandler}
                 continue={this.purchaseContinueHandler}
-                price={this.state.price} />
+                price={this.props.price} />
         }
         if (this.state.loading) {
             orderSummary = <Spinner />;
@@ -151,7 +113,9 @@ class BurgerBuilder extends Component {
 
 const mapStateToProps = state => {
     return {
-        ingredients: {cheese: 0, bacon: 1, salad: 1, meat: 1}
+        ingredients: state.ingredients,
+        price: state.price,
+        purchasable: state.purchasable
     }
 }
 
@@ -159,7 +123,8 @@ const mapDispatchToProps = dispatchEvent => {
     return {
         onLoadIngredient: () => dispatchEvent({type: actionTypes.LOAD_INGREDIENT}),
         onAddingIngredient: (ingType) => dispatchEvent({type: actionTypes.ADD_INGREDIENT, ingType: ingType}),
+        onRemovingIngredient: (ingType) => dispatchEvent({type: actionTypes.REMOVE_INGREDIENT, ingType: ingType})
     }
 }
-
+//withErrorHandler(BurgerBuilder, axios)
 export default connect(mapStateToProps, mapDispatchToProps)(withErrorHandler(BurgerBuilder, axios)) ; 
