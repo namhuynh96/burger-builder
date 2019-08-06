@@ -22,6 +22,7 @@ class BurgerBuilder extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            purchasable: false,
             purchasing: false,
             loading: false,
             error: false
@@ -63,8 +64,15 @@ class BurgerBuilder extends Component {
         // });
     }
 
-    componentDidMount() {
-        this.props.onLoadIngredient();
+    // componentDidMount() {
+    //     this.props.onLoadIngredient();
+    // }
+
+    purchasableHandler = (ings) => {
+        const sum = Object.keys(ings).map((ingKey) => {
+            return ings[ingKey]
+        }).reduce((acc, crr) => acc + crr, 0);
+        return sum > 0;
     }
 
     render() {
@@ -87,7 +95,7 @@ class BurgerBuilder extends Component {
                         ingredientRemoved={this.props.onRemovingIngredient}
                         disabledInfo={disabledInfo}
                         price={this.props.price}
-                        purchasable={this.props.purchasable}
+                        purchasable={this.purchasableHandler(this.props.ingredients)}
                         orderClicked={this.purchasingHandler} />
                 </Aux>
             );
@@ -114,8 +122,7 @@ class BurgerBuilder extends Component {
 const mapStateToProps = state => {
     return {
         ingredients: state.ingredients,
-        price: state.price,
-        purchasable: state.purchasable
+        price: state.price
     }
 }
 

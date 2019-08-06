@@ -3,8 +3,7 @@ import axios from '../../axios/axios-order';
 
 const initialState = {
     ingredients: { cheese: 0, bacon: 0, meat: 0, salad: 0 },
-    price: 4,
-    purchasable: false
+    price: 4
 }
 
 const INGREDIENTS_PRICE = {
@@ -14,16 +13,16 @@ const INGREDIENTS_PRICE = {
     salad: 0.6
 }
 
-const loadIngredientsHandler = () => {
-    var reqest = axios.get('https://react-my-burger-27f38.firebaseio.com/ingredients.json')
-        .then(res => {
-            return res;
-        })
-        .catch(err => {
-            throw err;
-        });
-    return reqest
-}
+// const loadIngredientsHandler = () => {
+//     var reqest = axios.get('https://react-my-burger-27f38.firebaseio.com/ingredients.json')
+//         .then(res => {
+//             return res;
+//         })
+//         .catch(err => {
+//             throw err;
+//         });
+//     return reqest
+// }
 
 const purchasableHandler = (ing) => {
     const sum = Object.keys(ing).map((ingKey) => {
@@ -33,35 +32,27 @@ const purchasableHandler = (ing) => {
 }
 
 const ingredients = (state = initialState, action) => {
-    let ing = { ...state.ingredients };
-    let oldPrice = state.price;
-    let updatedPrice = 0;
     switch (action.type) {
         // case actionTypes.LOAD_INGREDIENT:
         //     console.log(loadIngredientsHandler());
-        
         case actionTypes.ADD_INGREDIENT:
-            ing[action.ingType]++;
-            updatedPrice = INGREDIENTS_PRICE[action.ingType] + oldPrice;
             return {
                 ...state,
-                ingredients: ing,
-                price: updatedPrice,
-                purchasable: purchasableHandler(ing)
+                ingredients: {
+                    ...state.ingredients,
+                    [action.ingType]: state.ingredients[action.ingType] + 1
+                },
+                price: state.price + INGREDIENTS_PRICE[action.ingType]
             }
         case actionTypes.REMOVE_INGREDIENT:
-            if (ing[action.ingType] <= 0) {
-                return;
-            }
-            ing[action.ingType]--;
-            updatedPrice = oldPrice - INGREDIENTS_PRICE[action.ingType];
             return {
                 ...state,
-                ingredients: ing,
-                price: updatedPrice,
-                purchasable: purchasableHandler(ing)
+                ingredients: {
+                    ...state.ingredients,
+                    [action.ingType]: state.ingredients[action.ingType] - 1
+                },
+                price: state.price - INGREDIENTS_PRICE[action.ingType]
             }
-
     }
     return state;
 }
